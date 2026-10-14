@@ -69,17 +69,23 @@ export function DeezerArtistPage() {
 
       <section>
         <h2 className="text-xl font-semibold mb-4">Top tracks</h2>
-        <div className="space-y-1">
-          {topTracks.slice(0, 10).map((track, index) => (
-            <TrackRow
-              key={track.id}
-              track={track}
-              index={index}
-              tracks={topTracks}
-              showAlbum={true}
-            />
-          ))}
-        </div>
+        {topTracks.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-400">No full tracks available</p>
+          </div>
+        ) : (
+          <div className="space-y-1">
+            {topTracks.slice(0, 10).map((track, index) => (
+              <TrackRow
+                key={track.id}
+                track={track}
+                index={index}
+                tracks={topTracks}
+                showAlbum={true}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
       <section>
