@@ -77,9 +77,14 @@ function remember(url: string, value: unknown) {
  */
 export async function relayJson<T>(
   url: string,
-  options: { ttlMs?: number; plausible?: (value: unknown) => boolean } = {}
+  options: {
+    ttlMs?: number;
+    plausible?: (value: unknown) => boolean;
+    directTimeoutMs?: number;
+  } = {}
 ): Promise<T> {
   const ttl = options.ttlMs ?? 5 * 60_000;
+  const directTimeout = options.directTimeoutMs ?? DIRECT_TIMEOUT_MS;
   const plausible = options.plausible;
   const accept = (value: unknown): T => {
     if (plausible && !plausible(value)) {
@@ -97,7 +102,7 @@ export async function relayJson<T>(
     let lastError: unknown = new Error("all JSON strategies failed");
 
     try {
-      const text = await httpRequestText(url, { timeoutMs: DIRECT_TIMEOUT_MS });
+      const text = await httpRequestText(url, { timeoutMs: directTimeout });
       const value = accept(JSON.parse(text));
       remember(url, value);
       return value;

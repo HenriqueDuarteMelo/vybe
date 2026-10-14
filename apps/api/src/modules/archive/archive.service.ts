@@ -1,5 +1,15 @@
-import { httpRequestText } from "../../utils/http.js";
+import { relayJson } from "../../utils/relay.js";
 import { resolveArtistName } from "../musicbrainz/musicbrainz.service.js";
+
+// archive.org is intermittently unreachable/throttled from some hosting IPs
+// (Render's egress got blocked while working fine elsewhere), so every metadata
+// and search call goes through the relay helper: direct first, then the public
+// relays. Results are cached per-URL, which also throttles repeated searches.
+const ARCHIVE_JSON_TTL = 5 * 60_000;
+
+function archiveJson<T>(url: string, ttlMs = ARCHIVE_JSON_TTL): Promise<T> {
+  return relayJson<T>(url, { ttlMs, directTimeoutMs: 2000 });
+}
 
 interface ArchiveItem {
   identifier: string;
@@ -214,8 +224,7 @@ async function searchArchiveItems(term: string): Promise<ArchiveItem[]> {
   const url = `https://archive.org/advancedsearch.php?q=${encodeURIComponent(
     query
   )}&fl[]=identifier&fl[]=title&fl[]=creator&rows=15&output=json&sort[]=downloads+desc`;
-  const resp = await httpRequestText(url, { timeoutMs: 12000 });
-  const data = JSON.parse(resp);
+  const data = await archiveJson<{ response?: { docs?: ArchiveItem[] } }>(url);
   return (data.response?.docs || []) as ArchiveItem[];
 }
 
@@ -230,8 +239,7 @@ async function searchItemsByCreator(creator: string): Promise<ArchiveItem[]> {
   const url = `https://archive.org/advancedsearch.php?q=${encodeURIComponent(
     query
   )}&fl[]=identifier&fl[]=title&fl[]=creator&rows=15&output=json&sort[]=downloads+desc`;
-  const resp = await httpRequestText(url, { timeoutMs: 12000 });
-  const data = JSON.parse(resp);
+  const data = await archiveJson<{ response?: { docs?: ArchiveItem[] } }>(url);
   return (data.response?.docs || []) as ArchiveItem[];
 }
 
@@ -260,8 +268,10 @@ async function getAudioFiles(identifier: string): Promise<ArchiveFile[]> {
   if (hit && Date.now() - hit.at < AUDIO_FILES_TTL) return hit.files;
 
   const url = `https://archive.org/metadata/${identifier}/files`;
-  const resp = await httpRequestText(url, { timeoutMs: 12000 });
-  const parsed = JSON.parse(resp) as { result?: ArchiveFile[] };
+  const parsed = await archiveJson<{ result?: ArchiveFile[] } | ArchiveFile[]>(
+    url,
+    AUDIO_FILES_TTL
+  );
   const raw = Array.isArray(parsed) ? parsed : (parsed.result ?? []);
   const files = raw.filter(
     (f) =>
@@ -498,11 +508,10 @@ export async function getArchiveItemTracks(identifier: string): Promise<ArchiveT
   if (cached) return Array.isArray(cached) ? cached : [];
 
   try {
-    const metaResp = await httpRequestText(
-      `https://archive.org/metadata/${identifier}`,
-      { timeoutMs: 12000 }
-    );
-    const meta = JSON.parse(metaResp);
+    const meta = await archiveJson<{
+      metadata?: { title?: string; creator?: string };
+      files?: ArchiveFile[];
+    }>(`https://archive.org/metadata/${identifier}`);
 
     const item: ArchiveItem = {
       identifier,
@@ -665,8 +674,7 @@ async function archiveSearch(query: string, rows: number): Promise<ArchiveItem[]
   const url = `https://archive.org/advancedsearch.php?q=${encodeURIComponent(
     query
   )}&fl[]=identifier&fl[]=title&fl[]=creator&rows=${rows}&output=json&sort[]=downloads+desc`;
-  const resp = await httpRequestText(url, { timeoutMs: 6000 });
-  const data = JSON.parse(resp);
+  const data = await archiveJson<{ response?: { docs?: ArchiveItem[] } }>(url);
   return (data.response?.docs || []) as ArchiveItem[];
 }
 

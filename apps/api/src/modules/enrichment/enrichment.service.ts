@@ -23,7 +23,13 @@ const envInt = (name: string, fallback: number): number => {
   return Number.isFinite(value) && value > 0 ? value : fallback;
 };
 
-export const FULL_AUDIO_LIMIT = envInt("FULL_AUDIO_LIMIT", 30);
+// Per-track archive lookups are disabled by default: each one fans out to
+// several archive.org searches, and a full page of them (30 tracks x 3) got the
+// host's IP throttled by archive.org, which broke even the artists the archive
+// does have. Full-length audio now comes from the archive *search* results that
+// are already in the list (phase 1), so this stays off unless an environment
+// opts back in (FULL_AUDIO_LIMIT=N).
+export const FULL_AUDIO_LIMIT = envInt("FULL_AUDIO_LIMIT", 0);
 export const FULL_AUDIO_BUDGET_MS = envInt("FULL_AUDIO_BUDGET_MS", 12000);
 
 // Any audioUrl works: http(s) for archive/remote streams, a relative path for
