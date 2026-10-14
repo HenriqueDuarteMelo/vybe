@@ -1,0 +1,97 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-surface-300;
+  }
+
+  body {
+    @apply bg-surface text-white;
+    font-family: "Inter", system-ui, sans-serif;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-surface;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-surface-300 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-vybe-600;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-surface-50/80 backdrop-blur-xl border border-white/5;
+  }
+
+  .glow-vybe {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-r from-vybe-400 to-vybe-600 bg-clip-text text-transparent;
+  }
+
+  .hover-lift {
+    @apply transition-all duration-200 hover:-translate-y-0.5;
+  }
+
+  input[type="range"].vybe-range {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(
+      to right,
+      theme("colors.vybe.500") 0%,
+      theme("colors.vybe.500") var(--progress, 0%),
+      theme("colors.surface.300") var(--progress, 0%),
+      theme("colors.surface.300") 100%
+    );
+    cursor: pointer;
+    outline: none;
+  }
+
+  input[type="range"].vybe-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 0 8px rgba(139, 92, 246, 0.5);
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  input[type="range"].vybe-range:hover::-webkit-slider-thumb,
+  input[type="range"].vybe-range:active::-webkit-slider-thumb {
+    opacity: 1;
+  }
+
+  input[type="range"].vybe-range::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border: none;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 0 8px rgba(139, 92, 246, 0.5);
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  input[type="range"].vybe-range:hover::-moz-range-thumb,
+  input[type="range"].vybe-range:active::-moz-range-thumb {
+    opacity: 1;
+  }
+}
