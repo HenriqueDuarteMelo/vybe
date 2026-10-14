@@ -60,7 +60,7 @@ export function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full bg-surface-100 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-vybe-500/50"
-              placeholder="adm"
+              placeholder="you@example.com"
             />
           </div>
 
@@ -89,10 +89,6 @@ export function LoginPage() {
             >
               Sign up
             </button>
-          </p>
-
-          <p className="text-xs text-gray-500 text-center bg-surface-100 rounded-lg px-3 py-2">
-            Dev account: <span className="font-mono">adm / adm1</span>
           </p>
         </form>
       </div>
